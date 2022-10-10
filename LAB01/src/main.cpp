@@ -7,6 +7,6 @@ int main(){
     using namespace std;
     std::ifstream f("data\\data.json");
     json data = json::parse(f);
-    //cout<<data<<endl;
+    cout<<data<<endl;
     return 0;
 }
