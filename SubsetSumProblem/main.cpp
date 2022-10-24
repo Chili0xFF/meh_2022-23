@@ -43,7 +43,7 @@ vector<int> SolveBruteForce(Problem problem){
                 tempResult.push_back(multiset.at(j));
             }
 
-            if(count(problem.checked.begin(), problem.checked.end(), tempResult)==0){
+            if(find(problem.checked.begin(), problem.checked.end(), tempResult)==problem.checked.end()){
                 cout<<"Subset: ";
                 cout<<"{"<<tempResult.at(0);
                 for(int j=1;j<tempResult.size();j++){
