@@ -9,7 +9,7 @@
 					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
 					"minimumCMakeVersion" : 
 					{
-						"string" : "3.23"
+						"string" : "3.21.1"
 					},
 					"projectIndex" : 0,
 					"source" : ".",
@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "SubsetSumProblem::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-SubsetSumProblem-Debug-727d644b160f99e6a16f.json",
+					"jsonFile" : "target-SubsetSumProblem-Debug-1c63004e8f28d75f0d1f.json",
 					"name" : "SubsetSumProblem",
 					"projectIndex" : 0
 				}
@@ -49,12 +49,12 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/cmake-build-debug",
-		"source" : "C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem"
+		"build" : "E:/GithubRepos/meh_2022-23/SubsetSumProblem/cmake-build-debug",
+		"source" : "E:/GithubRepos/meh_2022-23/SubsetSumProblem"
 	},
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 4
+		"minor" : 3
 	}
 }
