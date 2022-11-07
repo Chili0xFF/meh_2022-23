@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <numeric>
 #include <random>
+#include <fstream>
 
 typedef std::mersenne_twister_engine<uint_fast32_t,
         32,624,397,31,0x9908b0df,11,0xffffffff,7,0x9d2c5680,15,0xefc60000,18,1812433253>
@@ -47,6 +48,7 @@ class Problem{
 vector<int> SolveRandomTry(Problem problem, int iterations=1000);
 
 vector<int> SolveClimbing(Problem problem, int iterations=1000);
+
 vector<int> SolveRandomClimbing(Problem problem, int iterations=1000);
 
 vector<int> SolveBruteForce(Problem problem);
@@ -57,17 +59,49 @@ vector<int> translate(vector<int> vector1, vector<int> vector2);
 
 
 
-int main() {
-    Problem problem(75,{2,2,2,2,2,2,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16});
+int main(int argc, char **argv) {
+    vector<int> multiset;
+    string link = argv[3];
+    ifstream f(link);
+    if (f.is_open()) {
+        string line;
+        while (getline(f, line)) {
+            multiset.push_back(stoi(line));
+        }
+        f.close();
+    }else cout<<"error\n";
+    string function = argv[1];
+    int target = stoi(argv[2]);
+
+    Problem problem(target,multiset);
     //problem.showMultiset();
+
+    switch (function[0]) {
+        case 'b':
+            SolveBruteForce(problem);
+            break;
+        case 'r':
+            SolveRandomTry(problem,stoi(argv[4]));
+            break;
+        case 'c':
+            SolveClimbing(problem,stoi(argv[4]));
+            break;
+        case 'w':
+            SolveRandomClimbing(problem,stoi(argv[4]));
+            break;
+        default:
+            cout<<"ERROR! CORRECT SYNTAX -> [b(brute)|r(random)|c(climb)|w(random climb)] [target value] [path to file] [iterations if needed]";
+            return 0;
+    }
     //SolveBruteForce(problem);
     //SolveRandomTry(problem,10);
-    SolveClimbing(problem);
-    SolveRandomClimbing(problem);
+    //SolveClimbing(problem);
+    //SolveRandomClimbing(problem);
     return 0;
 }
 
 vector<int> SolveRandomClimbing(Problem problem, int iterations) {
+    cout<<"RANDOM CLIMB:\n";
     vector<int> binaryZeroes = problem.binaryResult;
     vector<int> bestSolution = problem.multiset;
     //Generate size
@@ -123,6 +157,7 @@ vector<int> SolveRandomClimbing(Problem problem, int iterations) {
 }
 
 vector<int> SolveBruteForce(Problem problem){
+    cout<<"BRUTE FORCE:\n";
     vector<int> multiset = problem.multiset;
     vector<int> tempResult;
     vector<int> bestSolution = multiset;
@@ -152,8 +187,6 @@ vector<int> SolveBruteForce(Problem problem){
                 }
                 problem.checked.push_back(tempResult);
             }
-
-
         }while(next_permutation(multiset.begin(),multiset.end()));
     }
     cout<<"No subset found"<<endl;
@@ -169,6 +202,7 @@ vector<int> SolveBruteForce(Problem problem){
 }
 
 vector<int> SolveClimbing(Problem problem, int iterations) {
+    cout<<"CLIMB:\n";
     vector<int> binaryZeroes = problem.binaryResult;
     vector<int> bestSolution = problem.multiset;
     //Generate size
@@ -237,6 +271,7 @@ vector<vector<int>> findNeighbour(const vector<int>& binary) {
 }
 
 vector<int> SolveRandomTry(Problem problem, int iterations) {
+    cout<<"RANDOM:\n";
     vector<int> binaryZeroes = problem.binaryResult;
     vector<int> bestSolution = problem.multiset;
     for(int i=0;i<iterations;i++){

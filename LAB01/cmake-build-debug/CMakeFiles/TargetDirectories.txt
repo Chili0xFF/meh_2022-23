@@ -1,3 +1,3 @@
-C:/Users/s23049/Documents/GitHub/meh_2022-23/LAB01/cmake-build-debug/CMakeFiles/mhedemoapp.dir
-C:/Users/s23049/Documents/GitHub/meh_2022-23/LAB01/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/s23049/Documents/GitHub/meh_2022-23/LAB01/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+E:/GithubRepos/meh_2022-23/LAB01/cmake-build-debug/CMakeFiles/mhedemoapp.dir
+E:/GithubRepos/meh_2022-23/LAB01/cmake-build-debug/CMakeFiles/edit_cache.dir
+E:/GithubRepos/meh_2022-23/LAB01/cmake-build-debug/CMakeFiles/rebuild_cache.dir
