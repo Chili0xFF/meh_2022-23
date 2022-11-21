@@ -4,6 +4,7 @@
 #include <numeric>
 #include <random>
 #include <fstream>
+#include <set>
 
 typedef std::mersenne_twister_engine<uint_fast32_t,
         32,624,397,31,0x9908b0df,11,0xffffffff,7,0x9d2c5680,15,0xefc60000,18,1812433253>
@@ -58,6 +59,7 @@ vector<vector<int>> findNeighbour(const vector<int>& vector1);
 vector<int> translate(vector<int> vector1, vector<int> vector2);
 
 
+vector<int> SolveTabu(Problem problem, int iterations);
 
 int main(int argc, char **argv) {
     vector<int> multiset;
@@ -69,25 +71,56 @@ int main(int argc, char **argv) {
             multiset.push_back(stoi(line));
         }
         f.close();
-    }else cout<<"error\n";
+    }else {
+        cout<<"error, failed to load file: ";
+        cout<<link<<endl;
+        return 0;
+    }
     string function = argv[1];
     int target = stoi(argv[2]);
 
     Problem problem(target,multiset);
     //problem.showMultiset();
-
+    string iterations;
     switch (function[0]) {
         case 'b':
             SolveBruteForce(problem);
             break;
         case 'r':
-            SolveRandomTry(problem,stoi(argv[4]));
+            try {
+                iterations = argv[4];
+            }catch (std::out_of_range){
+                cout<<"Error: Missing iteration number";
+                return 0;
+            }
+            SolveRandomTry(problem,stoi(iterations));
             break;
         case 'c':
-            SolveClimbing(problem,stoi(argv[4]));
+            try {
+                iterations = argv[4];
+            }catch (std::out_of_range){
+                cout<<"Error: Missing iteration number";
+                return 0;
+            }
+            SolveClimbing(problem,stoi(iterations));
             break;
         case 'w':
-            SolveRandomClimbing(problem,stoi(argv[4]));
+            try {
+                iterations = argv[4];
+            }catch (std::out_of_range){
+                cout<<"Error: Missing iteration number";
+                return 0;
+            }
+            SolveRandomClimbing(problem,stoi(iterations));
+            break;
+        case 't':
+            try {
+                iterations = argv[4];
+            }catch (std::out_of_range){
+                cout<<"Error: Missing iteration number";
+                return 0;
+            }
+            SolveTabu(problem,stoi(iterations));
             break;
         default:
             cout<<"ERROR! CORRECT SYNTAX -> [b(brute)|r(random)|c(climb)|w(random climb)] [target value] [path to file] [iterations if needed]";
@@ -98,6 +131,46 @@ int main(int argc, char **argv) {
     //SolveClimbing(problem);
     //SolveRandomClimbing(problem);
     return 0;
+}
+
+vector<int> SolveTabu(Problem problem, int iterations, int tabSize=1000) {
+    cout<<"TABU:\n";
+    vector<int> binaryZeroes = problem.binaryResult;
+    vector<int> bestSolution = problem.multiset;
+    //GenerateSize
+    int size = (mt1()%(problem.multiset.size()-1))+1;
+    //Generate numbers;
+    for(int j=0;j<size;j++) {
+        int indexToOne = mt1() % (problem.multiset.size());                           //generating a random subset
+        if (binaryZeroes.at(indexToOne) == 0)binaryZeroes.at(indexToOne) = 1;
+        else j--;
+    }
+    problem.checked.push_back(binaryZeroes);
+    vector<int> bestNeighbour=binaryZeroes;
+    for(int i=0;i<iterations;i++){
+        //Generate neighbours
+        vector<vector<int>> neighbours=findNeighbour(bestNeighbour);
+        bestNeighbour={};
+        for (vector<int> bour : neighbours) {
+            if(find(problem.checked.begin(),problem.checked.end(),bour)==problem.checked.end()){
+                if(problem.checkHowCorrect(bour)< problem.checkHowCorrect(bestNeighbour))bestNeighbour=bour;
+            }
+        }
+        if(problem.checkHowCorrect(bestNeighbour)<problem.checkHowCorrect(bestSolution))bestSolution=bestNeighbour;
+        problem.checked.push_back(bestNeighbour);
+        if(problem.checked.size()>tabSize){
+            problem.checked.erase(problem.checked.begin());
+        }
+    }
+
+    vector<int> bestSolutionTranslated = translate(problem.multiset,bestSolution);
+    cout<<"BEST SOLUTION: \n";
+    cout<<"{";
+    for(int i=0;i<bestSolutionTranslated.size()-1;i++){
+        cout<<bestSolutionTranslated.at(i)<<", ";
+    }
+    cout<<bestSolutionTranslated.at(bestSolutionTranslated.back())<<"}\nCost: "<<problem.checkHowCorrect(bestSolution);
+    return bestSolution;
 }
 
 vector<int> SolveRandomClimbing(Problem problem, int iterations) {

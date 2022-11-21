@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "E:/GithubRepos/meh_2022-23/SubsetSumProblem/main.cpp" "CMakeFiles/SubsetSumProblem.dir/main.cpp.obj" "gcc" "CMakeFiles/SubsetSumProblem.dir/main.cpp.obj.d"
+  "C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/main.cpp" "CMakeFiles/SubsetSumProblem.dir/main.cpp.obj" "gcc" "CMakeFiles/SubsetSumProblem.dir/main.cpp.obj.d"
   )
 
 # Targets to which this target links.
