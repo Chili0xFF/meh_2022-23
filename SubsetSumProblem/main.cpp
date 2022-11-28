@@ -4,66 +4,51 @@
 #include <numeric>
 #include <random>
 #include <fstream>
-#include <set>
+#include <functional>
+#include <map>
+#include <chrono>
 
-typedef std::mersenne_twister_engine<uint_fast32_t,
-        32,624,397,31,0x9908b0df,11,0xffffffff,7,0x9d2c5680,15,0xefc60000,18,1812433253>
-        mt19937;
-mt19937 mt1(time(nullptr));
+#include "tp_args.hpp"
+#include "searchMethods.h"
+#include "Problem.h"
 
 using namespace std;
 
-class Problem{
-    public:
-        vector<int> multiset;
-        vector<int> binaryResult;
-        vector<vector<int>> checked;
-        int targetValue;
-
-    void zero() {
-        for(int j=0;j<this->multiset.size();j++){
-            this->binaryResult.push_back(0);
-        }
-    }
-
-    Problem(int target, vector<int> set){
-            this->targetValue=target;
-            this->multiset=set;
-            zero();
-        };
-        void showMultiset(){
-            cout<<"{"<<this->multiset.at(0);
-            for(int i=1;i<this->multiset.size();i++){
-                cout<<", "<<this->multiset.at(i);
-            }
-            cout<<"}\n";
-        };
-        int checkHowCorrect(vector<int> subset){
-            int result=accumulate(subset.begin(),subset.end(),0);  //Funkcja kosztu
-            int differenceFromZero = result-targetValue;
-            return abs(differenceFromZero);
-        };
-};
-
-
-vector<int> SolveRandomTry(Problem problem, int iterations=1000);
-
-vector<int> SolveClimbing(Problem problem, int iterations=1000);
-
-vector<int> SolveRandomClimbing(Problem problem, int iterations=1000);
-
-vector<int> SolveBruteForce(Problem problem);
-
-vector<vector<int>> findNeighbour(const vector<int>& vector1);
-
-vector<int> translate(vector<int> vector1, vector<int> vector2);
-
-
-vector<int> SolveTabu(Problem problem, int iterations);
+string method;
+int target;
+int iterations;
+string link;
+bool showDetails;
+bool showTime;
+bool showGraph;
+bool showSolution;
+bool showQuality;
+bool showIterations;
+bool showAmountCheck;
 
 int main(int argc, char **argv) {
     vector<int> multiset;
-    string link = argv[3];
+    using namespace tp::args;
+    // Arguments handling
+    auto help = arg(argc, argv, "help", false);
+    method = arg(argc, argv, "method", std::string("tabu_search"),"Opt. method. Available are: brute_force tabu_search ""random_probe hill_climb_det.");
+    target = arg(argc,argv, "target", 100, "Target value of our subset");
+    iterations = arg(argc, argv, "iterations", 100, "Maximal number of iterations.");
+    link = arg(argc,argv,"link", std::string("c:\\"), "Path to the input file");
+    showDetails = arg(argc, argv, "details", false, "Show details.");
+    showTime = arg(argc, argv, "time", false, "Show time.");
+    showGraph = arg(argc, argv, "graph", false, "Show graph.");
+    showSolution = arg(argc, argv, "solution", false, "Show solution.");
+    showQuality = arg(argc, argv, "quality", false, "Show quality of solution.");
+    showIterations = arg(argc, argv, "usedIterations", false, "Show how many iterations passed.");
+    showAmountCheck = arg(argc, argv, "checks", false, "Show how many how many times target function was used");
+
+    if (help) {
+        std::cout << "help screen.." << std::endl;
+        args_info(std::cout);
+        return 0;
+    }
+
     ifstream f(link);
     if (f.is_open()) {
         string line;
@@ -76,322 +61,29 @@ int main(int argc, char **argv) {
         cout<<link<<endl;
         return 0;
     }
-    string function = argv[1];
-    int target = stoi(argv[2]);
 
     Problem problem(target,multiset);
-    //problem.showMultiset();
-    string iterations;
-    switch (function[0]) {
-        case 'b':
-            SolveBruteForce(problem);
-            break;
-        case 'r':
-            try {
-                iterations = argv[4];
-            }catch (std::out_of_range){
-                cout<<"Error: Missing iteration number";
-                return 0;
-            }
-            SolveRandomTry(problem,stoi(iterations));
-            break;
-        case 'c':
-            try {
-                iterations = argv[4];
-            }catch (std::out_of_range){
-                cout<<"Error: Missing iteration number";
-                return 0;
-            }
-            SolveClimbing(problem,stoi(iterations));
-            break;
-        case 'w':
-            try {
-                iterations = argv[4];
-            }catch (std::out_of_range){
-                cout<<"Error: Missing iteration number";
-                return 0;
-            }
-            SolveRandomClimbing(problem,stoi(iterations));
-            break;
-        case 't':
-            try {
-                iterations = argv[4];
-            }catch (std::out_of_range){
-                cout<<"Error: Missing iteration number";
-                return 0;
-            }
-            SolveTabu(problem,stoi(iterations));
-            break;
-        default:
-            cout<<"ERROR! CORRECT SYNTAX -> [b(brute)|r(random)|c(climb)|w(random climb)] [target value] [path to file] [iterations if needed]";
-            return 0;
+    map<string, function<vector<int>(Problem,int,bool,bool,bool,bool)>> methods = {
+            {"brute_force", SolveBruteForce},
+            {"random_probe", SolveRandomTry},
+            {"hill_climb_det", SolveClimbing},
+            {"hill_climb_rand", SolveRandomClimbing},
+            {"tabu_search", SolveTabu},
+    };
+
+    auto start = std::chrono::steady_clock::now();
+    vector<int> result = methods.at(method)(problem, iterations, showDetails, showIterations, showAmountCheck, showGraph);
+    auto end = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-start;
+    if(showTime)std::cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
+    if(showSolution){
+        cout<<"Subset: ";
+        cout<<"{"<<result.at(0);
+        for(int j=1;j<result.size();j++){
+            cout<<", "<<result.at(j);
+        }
+        cout<<"}";
     }
-    //SolveBruteForce(problem);
-    //SolveRandomTry(problem,10);
-    //SolveClimbing(problem);
-    //SolveRandomClimbing(problem);
+    if(showQuality)cout<<problem.checkHowCorrect(result)<<endl;
     return 0;
-}
-
-vector<int> SolveTabu(Problem problem, int iterations, int tabSize=1000) {
-    cout<<"TABU:\n";
-    vector<int> binaryZeroes = problem.binaryResult;
-    vector<int> bestSolution = problem.multiset;
-    //GenerateSize
-    int size = (mt1()%(problem.multiset.size()-1))+1;
-    //Generate numbers;
-    for(int j=0;j<size;j++) {
-        int indexToOne = mt1() % (problem.multiset.size());                           //generating a random subset
-        if (binaryZeroes.at(indexToOne) == 0)binaryZeroes.at(indexToOne) = 1;
-        else j--;
-    }
-    problem.checked.push_back(binaryZeroes);
-    vector<int> bestNeighbour=binaryZeroes;
-    for(int i=0;i<iterations;i++){
-        //Generate neighbours
-        vector<vector<int>> neighbours=findNeighbour(bestNeighbour);
-        bestNeighbour={};
-        for (vector<int> bour : neighbours) {
-            if(find(problem.checked.begin(),problem.checked.end(),bour)==problem.checked.end()){
-                if(problem.checkHowCorrect(bour)< problem.checkHowCorrect(bestNeighbour))bestNeighbour=bour;
-            }
-        }
-        if(problem.checkHowCorrect(bestNeighbour)<problem.checkHowCorrect(bestSolution))bestSolution=bestNeighbour;
-        problem.checked.push_back(bestNeighbour);
-        if(problem.checked.size()>tabSize){
-            problem.checked.erase(problem.checked.begin());
-        }
-    }
-
-    vector<int> bestSolutionTranslated = translate(problem.multiset,bestSolution);
-    cout<<"BEST SOLUTION: \n";
-    cout<<"{";
-    for(int i=0;i<bestSolutionTranslated.size()-1;i++){
-        cout<<bestSolutionTranslated.at(i)<<", ";
-    }
-    cout<<bestSolutionTranslated.at(bestSolutionTranslated.back())<<"}\nCost: "<<problem.checkHowCorrect(bestSolution);
-    return bestSolution;
-}
-
-vector<int> SolveRandomClimbing(Problem problem, int iterations) {
-    cout<<"RANDOM CLIMB:\n";
-    vector<int> binaryZeroes = problem.binaryResult;
-    vector<int> bestSolution = problem.multiset;
-    //Generate size
-    int size = (mt1()%(problem.multiset.size()-1))+1;
-    //Generate numbers;
-    for(int j=0;j<size;j++) {
-        int indexToOne = mt1() % (problem.multiset.size());                           //generating a random subset
-        if (binaryZeroes.at(indexToOne) == 0)binaryZeroes.at(indexToOne) = 1;
-        else j--;
-    }
-
-    for(int i=0;i<iterations;i++){
-        vector<vector<int>> neighbours = findNeighbour(binaryZeroes);                       //Generating vector filled with new binary forms
-        vector<int> tempResult;
-        //BinaryZeros = Random binary subset
-        //best solution = max
-        //
-        tempResult = translate(problem.multiset,neighbours.at(0));
-        if(problem.checkHowCorrect(tempResult)==0){
-            cout<<"FOUND SUBSET!"<<endl;
-            return tempResult;
-        }
-        int randomIndex = mt1()%neighbours.size();
-        tempResult= translate(problem.multiset,neighbours.at(randomIndex));
-        if(problem.checkHowCorrect(tempResult)==0){
-            cout<<"FOUND SUBSET!"<<endl;
-            return tempResult;
-        }
-        if(problem.checkHowCorrect(bestSolution)>problem.checkHowCorrect(tempResult)){
-            bestSolution = tempResult;
-            binaryZeroes=neighbours.at(randomIndex);
-        }
-        cout<<"Subset: ";
-        cout<<"{"<<bestSolution.at(0);
-        for(int j=1;j<bestSolution.size();j++){
-            cout<<", "<<bestSolution.at(j);
-        }
-        cout<<"}";
-        int cost = problem.checkHowCorrect(bestSolution);
-        cout<<" HowFar: "<<cost<<"\n";
-
-    }
-    cout<<"No subset found"<<endl;
-    cout<<"Best solution: ";
-    cout<<"{"<<bestSolution.at(0);
-    for(int j=1;j<bestSolution.size();j++){
-        cout<<", "<<bestSolution.at(j);
-    }
-    cout<<"}";
-    int cost = problem.checkHowCorrect(bestSolution);
-    cout<<" HowFar: "<<cost<<"\n";
-    return bestSolution;
-}
-
-vector<int> SolveBruteForce(Problem problem){
-    cout<<"BRUTE FORCE:\n";
-    vector<int> multiset = problem.multiset;
-    vector<int> tempResult;
-    vector<int> bestSolution = multiset;
-    for(int i=1;i<=problem.multiset.size();i++)        //Ilość liczb w subsecie
-    {
-        //sort(multiset.begin(),multiset.end());
-        do{
-            tempResult.clear();
-            for(int j=0;j<i;j++){
-                tempResult.push_back(multiset.at(j));
-            }
-
-            if(find(problem.checked.begin(), problem.checked.end(), tempResult)==problem.checked.end()){
-                cout<<"Subset: ";
-                cout<<"{"<<tempResult.at(0);
-                for(int j=1;j<tempResult.size();j++){
-                    cout<<", "<<tempResult.at(j);
-                }
-                cout<<"}";
-                int cost = problem.checkHowCorrect(tempResult);
-                cout<<" HowFar: "<<cost<<"\n";
-                if(cost==0){
-                    cout<<"FOUND CORRECT SUBSET!";
-                    return tempResult;
-                }else if(cost<problem.checkHowCorrect(bestSolution)){
-                    bestSolution=tempResult;
-                }
-                problem.checked.push_back(tempResult);
-            }
-        }while(next_permutation(multiset.begin(),multiset.end()));
-    }
-    cout<<"No subset found"<<endl;
-    cout<<"Best solution: ";
-    cout<<"{"<<bestSolution.at(0);
-    for(int j=1;j<bestSolution.size();j++){
-        cout<<", "<<bestSolution.at(j);
-    }
-    cout<<"}";
-    int cost = problem.checkHowCorrect(bestSolution);
-    cout<<" HowFar: "<<cost<<"\n";
-    return bestSolution;
-}
-
-vector<int> SolveClimbing(Problem problem, int iterations) {
-    cout<<"CLIMB:\n";
-    vector<int> binaryZeroes = problem.binaryResult;
-    vector<int> bestSolution = problem.multiset;
-    //Generate size
-    int size = (mt1()%(problem.multiset.size()-1))+1;
-    //Generate numbers;
-    for(int j=0;j<size;j++) {
-        int indexToOne = mt1() % (problem.multiset.size());                           //generating a random subset
-        if (binaryZeroes.at(indexToOne) == 0)binaryZeroes.at(indexToOne) = 1;
-        else j--;
-    }
-
-    for(int i=0;i<iterations;i++){
-        vector<vector<int>> neighbours = findNeighbour(binaryZeroes);                       //Generating vector filled with new binary forms
-        vector<int> tempResult;
-        //BinaryZeros = Random binary subset
-        //best solution = max
-        //
-        tempResult = translate(problem.multiset,neighbours.at(0));
-        if(problem.checkHowCorrect(tempResult)==0){
-            cout<<"FOUND SUBSET!"<<endl;
-            return tempResult;
-        }
-        for(int j=1;j<neighbours.size();j++){
-            tempResult = translate(problem.multiset,neighbours.at(j));
-            if(problem.checkHowCorrect(tempResult)==0){
-                cout<<"FOUND SUBSET!"<<endl;
-                return tempResult;
-            }
-            if(problem.checkHowCorrect(bestSolution)>problem.checkHowCorrect(tempResult)){
-                bestSolution = tempResult;
-                binaryZeroes=neighbours.at(j);
-            }
-        }
-        cout<<"Subset: ";
-        cout<<"{"<<bestSolution.at(0);
-        for(int j=1;j<bestSolution.size();j++){
-            cout<<", "<<bestSolution.at(j);
-        }
-        cout<<"}";
-        int cost = problem.checkHowCorrect(bestSolution);
-        cout<<" HowFar: "<<cost<<"\n";
-
-    }
-    cout<<"No subset found"<<endl;
-    cout<<"Best solution: ";
-    cout<<"{"<<bestSolution.at(0);
-    for(int j=1;j<bestSolution.size();j++){
-        cout<<", "<<bestSolution.at(j);
-    }
-    cout<<"}";
-    int cost = problem.checkHowCorrect(bestSolution);
-    cout<<" HowFar: "<<cost<<"\n";
-    return bestSolution;
-}
-
-vector<vector<int>> findNeighbour(const vector<int>& binary) {
-    vector<vector<int>> neighbours;
-    for(int i=0;i<binary.size();i++){
-        vector<int> changedBinary = binary;
-        int changedIndex = mt1()%binary.size();
-        changedBinary.at(changedIndex)+=1;
-        changedBinary.at(changedIndex)%=2;
-        neighbours.push_back(changedBinary);
-    }
-    return neighbours;
-}
-
-vector<int> SolveRandomTry(Problem problem, int iterations) {
-    cout<<"RANDOM:\n";
-    vector<int> binaryZeroes = problem.binaryResult;
-    vector<int> bestSolution = problem.multiset;
-    for(int i=0;i<iterations;i++){
-        binaryZeroes = problem.binaryResult;
-        //Generate size
-        int size = (mt1()%(problem.multiset.size()-1))+1;
-        //Generate numbers;
-        for(int j=0;j<size;j++){
-            int indexToOne = mt1()%(problem.multiset.size());
-            if(binaryZeroes.at(indexToOne)==0)binaryZeroes.at(indexToOne)=1;
-            else j--;
-        }
-        vector<int> tempResult = translate(problem.multiset,binaryZeroes);
-
-        cout<<"Subset: ";
-        cout<<"{"<<tempResult.at(0);
-        for(int j=1;j<tempResult.size();j++){
-            cout<<", "<<tempResult.at(j);
-        }
-        cout<<"}";
-        int cost = problem.checkHowCorrect(tempResult);
-        cout<<" HowFar: "<<cost<<"\n";
-        if(cost==0){
-            cout<<"FOUND CORRECT SUBSET!";
-            return tempResult;
-        }else if(cost<problem.checkHowCorrect(bestSolution)){
-            bestSolution=tempResult;
-        }
-    }
-    cout<<"No subset found"<<endl;
-    cout<<"Best solution: ";
-    cout<<"{"<<bestSolution.at(0);
-    for(int j=1;j<bestSolution.size();j++){
-        cout<<", "<<bestSolution.at(j);
-    }
-    cout<<"}";
-    int cost = problem.checkHowCorrect(bestSolution);
-    cout<<" HowFar: "<<cost<<"\n";
-    return bestSolution;
-}
-
-vector<int> translate(vector<int> multiset, vector<int> binaryZeroes) {
-    vector<int> Result;
-    for (int j = 0; j < binaryZeroes.size(); ++j) {
-        if(binaryZeroes.at(j)==1){
-            Result.push_back(multiset.at(j));
-        }
-    }
-    return Result;
 }

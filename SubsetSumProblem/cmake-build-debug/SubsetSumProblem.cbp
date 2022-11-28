@@ -82,7 +82,19 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/Problem.h">
+			<Option target="SubsetSumProblem"/>
+		</Unit>
 		<Unit filename="C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/main.cpp">
+			<Option target="SubsetSumProblem"/>
+		</Unit>
+		<Unit filename="C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/searchMethods.cpp">
+			<Option target="SubsetSumProblem"/>
+		</Unit>
+		<Unit filename="C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/searchMethods.h">
+			<Option target="SubsetSumProblem"/>
+		</Unit>
+		<Unit filename="C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/tp_args.hpp">
 			<Option target="SubsetSumProblem"/>
 		</Unit>
 		<Unit filename="C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/CMakeLists.txt">

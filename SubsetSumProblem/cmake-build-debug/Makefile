@@ -152,6 +152,30 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SubsetSumProblem.dir\build.make CMakeFiles/SubsetSumProblem.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+searchMethods.obj: searchMethods.cpp.obj
+.PHONY : searchMethods.obj
+
+# target to build an object file
+searchMethods.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SubsetSumProblem.dir\build.make CMakeFiles/SubsetSumProblem.dir/searchMethods.cpp.obj
+.PHONY : searchMethods.cpp.obj
+
+searchMethods.i: searchMethods.cpp.i
+.PHONY : searchMethods.i
+
+# target to preprocess a source file
+searchMethods.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SubsetSumProblem.dir\build.make CMakeFiles/SubsetSumProblem.dir/searchMethods.cpp.i
+.PHONY : searchMethods.cpp.i
+
+searchMethods.s: searchMethods.cpp.s
+.PHONY : searchMethods.s
+
+# target to generate assembly for a file
+searchMethods.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SubsetSumProblem.dir\build.make CMakeFiles/SubsetSumProblem.dir/searchMethods.cpp.s
+.PHONY : searchMethods.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -164,6 +188,9 @@ help:
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
+	@echo ... searchMethods.obj
+	@echo ... searchMethods.i
+	@echo ... searchMethods.s
 .PHONY : help
 
 
