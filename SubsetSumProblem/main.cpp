@@ -1,8 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
-#include <numeric>
-#include <random>
 #include <fstream>
 #include <functional>
 #include <map>
@@ -18,7 +15,6 @@ string method;
 int target;
 int iterations;
 string link;
-bool showDetails;
 bool showTime;
 bool showGraph;
 bool showSolution;
@@ -27,15 +23,13 @@ bool showIterations;
 bool showAmountCheck;
 
 int main(int argc, char **argv) {
-    vector<int> multiset;
     using namespace tp::args;
     // Arguments handling
     auto help = arg(argc, argv, "help", false);
-    method = arg(argc, argv, "method", std::string("tabu_search"),"Opt. method. Available are: brute_force tabu_search ""random_probe hill_climb_det.");
+    link = arg(argc,argv,"link", std::string("No file given"), "Path to the input file");
     target = arg(argc,argv, "target", 100, "Target value of our subset");
+    method = arg(argc, argv, "method", std::string("tabu_search"),"Opt. method. Available are: brute_force tabu_search ""random_probe hill_climb_det.");
     iterations = arg(argc, argv, "iterations", 100, "Maximal number of iterations.");
-    link = arg(argc,argv,"link", std::string("c:\\"), "Path to the input file");
-    showDetails = arg(argc, argv, "details", false, "Show details.");
     showTime = arg(argc, argv, "time", false, "Show time.");
     showGraph = arg(argc, argv, "graph", false, "Show graph.");
     showSolution = arg(argc, argv, "solution", false, "Show solution.");
@@ -49,6 +43,7 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+    vector<int> multiset;
     ifstream f(link);
     if (f.is_open()) {
         string line;
@@ -63,7 +58,8 @@ int main(int argc, char **argv) {
     }
 
     Problem problem(target,multiset);
-    map<string, function<vector<int>(Problem,int,bool,bool,bool,bool)>> methods = {
+
+    map<string, function<vector<int>(Problem,int,bool,bool,bool)>> methods = {
             {"brute_force", SolveBruteForce},
             {"random_probe", SolveRandomTry},
             {"hill_climb_det", SolveClimbing},
@@ -72,18 +68,24 @@ int main(int argc, char **argv) {
     };
 
     auto start = std::chrono::steady_clock::now();
-    vector<int> result = methods.at(method)(problem, iterations, showDetails, showIterations, showAmountCheck, showGraph);
+    vector<int> result = methods.at(method)(problem, iterations, showIterations, showAmountCheck, showGraph);
     auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = end-start;
-    if(showTime)std::cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
+    if(showTime)std::cout << "Elapsed time: " << elapsed_seconds.count() << "s\n";
     if(showSolution){
-        cout<<"Subset: ";
-        cout<<"{"<<result.at(0);
-        for(int j=1;j<result.size();j++){
-            cout<<", "<<result.at(j);
+        cout<<"Solution: ";
+        try{
+            cout<<"{"<<result.at(0);
+            for(int j=1;j<result.size();j++){
+                cout<<", "<<result.at(j);
+            }
+
         }
-        cout<<"}";
+        catch(out_of_range){
+            cout<<"EMPTY";
+        }
+        cout<<"}\n";
     }
-    if(showQuality)cout<<problem.checkHowCorrect(result)<<endl;
+    if(showQuality)cout<<"How far from perfection: "<<problem.checkHowCorrect(result)<<endl;
     return 0;
 }

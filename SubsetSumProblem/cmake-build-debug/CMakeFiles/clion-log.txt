@@ -1,4 +1,4 @@
-"C:\Program Files\JetBrains\CLion 2022.2.1\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - MinGW Makefiles" -S C:\Users\s23049\Documents\GitHub\meh_2022-23\SubsetSumProblem -B C:\Users\s23049\Documents\GitHub\meh_2022-23\SubsetSumProblem\cmake-build-debug
+"C:\Program Files\JetBrains\CLion 2021.3.3\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - MinGW Makefiles" E:\GithubRepos\meh_2022-23\SubsetSumProblem
 -- Configuring done
 -- Generating done
--- Build files have been written to: C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/cmake-build-debug
+-- Build files have been written to: E:/GithubRepos/meh_2022-23/SubsetSumProblem/cmake-build-debug
