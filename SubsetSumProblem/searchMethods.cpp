@@ -1,5 +1,6 @@
 #include <random>
 #include <algorithm>
+#include <map>
 #include "searchMethods.h"
 
 typedef std::mersenne_twister_engine<uint_fast32_t,
@@ -183,7 +184,7 @@ vector<int> SolveRandomTry(Problem problem, int iterations, bool showHwoManyIter
             else j--;
         }
         vector<int> tempResult = translate(problem.multiset,binaryZeroes);
-            int cost = problem.checkHowCorrect(tempResult);
+        int cost = problem.checkHowCorrect(tempResult);
         if(cost==0){
             if(showHwoManyIterations)cout<<"Iterations: "<<iterationsChecked<<endl;
             if(showHowManyChecked)cout<<"Times Checked: "<<problem.HowManyTimesChecked<<endl;
@@ -193,6 +194,44 @@ vector<int> SolveRandomTry(Problem problem, int iterations, bool showHwoManyIter
             bestCost=cost;
         }
         if(showProgress)printZb(iterationsChecked,problem,bestSolution,tempResult);
+    }
+    if(showHwoManyIterations)cout<<"Iterations: "<<iterationsChecked<<endl;
+    if(showHowManyChecked)cout<<"Times Checked: "<<problem.HowManyTimesChecked<<endl;
+    return bestSolution;
+}
+vector<int> SolveAnnealing(Problem problem, int iterations, bool showHwoManyIterations, bool showHowManyChecked, bool showProgress, int temp, std::function<double(int)> T) {
+    vector<int> binaryZeroes = problem.binaryResult;
+    vector<int> bestSolution = problem.multiset;
+    std::uniform_int_distribution<int> rndNgb(0, binaryZeroes.size()-1);
+    std::uniform_real_distribution<float> uk(0.0,1.0);
+    //Generate size
+    std::uniform_int_distribution<int> int_distr(0, problem.multiset.size()-1);
+    int size = int_distr(mt1)+1;
+    //Generate numbers;
+    for(int j=0;j<size;j++){
+        int indexToOne = mt1()%(problem.multiset.size());
+        if(binaryZeroes.at(indexToOne)==0)binaryZeroes.at(indexToOne)=1;
+        else j--;
+    }
+    vector<int> tempResult = translate(problem.multiset,binaryZeroes);
+    bestSolution = tempResult;
+    //Annealing
+    for(int k=1;k<iterations+1&&problem.checkHowCorrect(bestSolution)!=0;k++,iterationsChecked++){
+        if(showProgress)printZb(iterationsChecked,problem,bestSolution,tempResult);
+        vector<vector<int>> neighbours = findNeighbour(binaryZeroes);
+        vector<int> randomNeighbour = neighbours.at(rndNgb(mt1));
+        vector<int> tranlRandNeighw = translate(problem.multiset,randomNeighbour);
+        if(problem.checkHowCorrect(tranlRandNeighw)<problem.checkHowCorrect(tempResult)){
+            tempResult=tranlRandNeighw;
+            binaryZeroes=randomNeighbour;
+            if(problem.checkHowCorrect(tempResult)<problem.checkHowCorrect(bestSolution)){
+                bestSolution=tempResult;
+            }
+        }
+        else if(uk(mt1)< exp(-1*((abs(problem.checkHowCorrect(tranlRandNeighw)-problem.checkHowCorrect(tempResult)))/T(k)))){
+            tempResult=tranlRandNeighw;
+            binaryZeroes=randomNeighbour;
+            }
     }
     if(showHwoManyIterations)cout<<"Iterations: "<<iterationsChecked<<endl;
     if(showHowManyChecked)cout<<"Times Checked: "<<problem.HowManyTimesChecked<<endl;
@@ -220,6 +259,12 @@ vector<vector<int>> findNeighbour(const vector<int>& binary) {
     return neighbours;
 }
 
+vector<int> randomNeighbour(const vector<int>& binary){
+    vector<vector<int>> neighbours = findNeighbour(binary);
+    std::uniform_int_distribution<int> rndNgb(0, neighbours.size()-1);
+    return neighbours.at(rndNgb(mt1));
+}
+
 void printZb(int iteration,Problem problem, vector<int> bestSolutionSoFar, vector<int> tempSolution){
-    cout << iteration << " " << problem.checkHowCorrect(bestSolutionSoFar) << " " << problem.checkHowCorrect(tempSolution) << endl;
+    cout << iteration << "\t" << problem.checkHowCorrect(bestSolutionSoFar) << "\t" << problem.checkHowCorrect(tempSolution) << endl;
 }

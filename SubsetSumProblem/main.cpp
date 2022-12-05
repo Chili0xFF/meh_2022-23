@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 #include <chrono>
+#include <cmath>
 
 #include "tp_args.hpp"
 #include "searchMethods.h"
@@ -21,6 +22,25 @@ bool showSolution;
 bool showQuality;
 bool showIterations;
 bool showAmountCheck;
+int annealTemp;
+
+string tempMethod;
+std::function<double(int)> T = [](int k){return 1000.0/(k+1);};
+
+map<string, function<double(int)>> tempMap = {
+        {"divByK",[](int k){return 1000.0/(k+1);}},
+        {"divByLogK",[](int k){return 1000.0/log(k);}},
+        {"05PowK",[](int k){return (double)pow(0.5,k);}}
+};
+
+map<string, function<vector<int>(Problem,int,bool,bool,bool)>> methods = {
+        {"brute_force", SolveBruteForce},
+        {"random_probe", SolveRandomTry},
+        {"hill_climb_det", SolveClimbing},
+        {"hill_climb_rand", SolveRandomClimbing},
+        {"tabu_search", SolveTabu},
+        {"annealing",[](Problem p,int i,bool a, bool b, bool c){return SolveAnnealing(p,i,a,b,c,annealTemp,tempMap.at(tempMethod));}}
+};
 
 int main(int argc, char **argv) {
     using namespace tp::args;
@@ -36,7 +56,8 @@ int main(int argc, char **argv) {
     showQuality = arg(argc, argv, "quality", false, "Show quality of solution.");
     showIterations = arg(argc, argv, "usedIterations", false, "Show how many iterations passed.");
     showAmountCheck = arg(argc, argv, "checks", false, "Show how many how many times target function was used");
-
+    annealTemp = arg(argc,argv, "temperature",10,"Sets temperature. Only used for -method anneal");
+    tempMethod = arg(argc,argv, "tempMethod",std::string("divByK"),"Chooses temperature methods. Only used for -method anneal [divByK | divByLogK | 05PowK]");
     if (help) {
         std::cout << "help screen.." << std::endl;
         args_info(std::cout);
@@ -58,14 +79,6 @@ int main(int argc, char **argv) {
     }
 
     Problem problem(target,multiset);
-
-    map<string, function<vector<int>(Problem,int,bool,bool,bool)>> methods = {
-            {"brute_force", SolveBruteForce},
-            {"random_probe", SolveRandomTry},
-            {"hill_climb_det", SolveClimbing},
-            {"hill_climb_rand", SolveRandomClimbing},
-            {"tabu_search", SolveTabu},
-    };
 
     auto start = std::chrono::steady_clock::now();
     vector<int> result = methods.at(method)(problem, iterations, showIterations, showAmountCheck, showGraph);
@@ -89,3 +102,5 @@ int main(int argc, char **argv) {
     if(showQuality)cout<<"How far from perfection: "<<problem.checkHowCorrect(result)<<endl;
     return 0;
 }
+
+
