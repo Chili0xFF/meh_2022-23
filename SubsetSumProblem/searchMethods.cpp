@@ -10,6 +10,8 @@ mt19937 mt1(time(nullptr));
 
 int iterationsChecked=0;
 
+using chromosome_t = vector<int>;
+
 vector<int> SolveTabu(Problem problem, int iterations, bool showHwoManyIterations, bool showHowManyChecked, bool showProgress) {
     int tabSize = 1000;
     vector<int> binaryZeroes = problem.binaryResult;
@@ -237,6 +239,55 @@ vector<int> SolveAnnealing(Problem problem, int iterations, bool showHwoManyIter
     if(showHowManyChecked)cout<<"Times Checked: "<<problem.HowManyTimesChecked<<endl;
     return bestSolution;
 }
+vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterations, bool showHowManyChecked, bool showProgress, float p_crossover, float p_mutation, int populationSize){
+    using namespace std;
+    uniform_real_distribution<double> uniform(0.0, 1.0);
+    population_t population = populate(populationSize,problem.multiset.size());
+    vector<double> population_fit(population.size());
+    transform(population.begin(), population.end(), population_fit.begin(),[&problem](chromosome_t chrom){return fitness(problem,chrom);});
+    for(int i=0;i<iterations;i++){
+        vector<int> parents_indexes(population.size());
+        population_t new_population(population.size());
+        // calculate fitness
+        transform(population_fit.begin(), population_fit.end(),
+                  parents_indexes.begin(),
+                  [&](auto e) { return selection(population_fit); });
+        // perform crossover operations
+        for (int i = 0; i < parents_indexes.size() - 1; i += 2) {
+            vector<chromosome_t> offspring = {population[parents_indexes[i]], population[parents_indexes[i + 1]]};
+            if (uniform(mt1) < p_crossover) {
+                offspring = crossover1p(offspring[0],offspring[1]);
+            }
+            new_population[i] = offspring[0];
+            new_population[i + 1] = offspring[1];
+        }
+        for (auto &chromosome : new_population) {
+            chromosome = mutation(chromosome, p_mutation);
+        }
+        population = new_population;
+        std::transform(population.begin(), population.end(), population_fit.begin(),
+                       [&problem](chromosome_t chrom){return fitness(problem,chrom);});
+    }
+    return population.at(0);
+}
+
+
+population_t populate(int populationSize,int chromosomeSize){
+    population_t population;
+    for(int i=0;i<populationSize;i++){
+        population.push_back(generateRandomSolution(chromosomeSize));
+    }
+    return population;
+}
+
+chromosome_t generateRandomSolution(int size) {
+    chromosome_t result;
+    uniform_int_distribution bin(0,1);
+    for(int i=0;i<size;i++){
+        result.push_back(bin(mt1));
+    }
+    return result;
+}
 
 vector<int> translate(vector<int> multiset, vector<int> binaryZeroes) {
     vector<int> Result;
@@ -259,6 +310,12 @@ vector<vector<int>> findNeighbour(const vector<int>& binary) {
     return neighbours;
 }
 
+float fitness(Problem p, chromosome_t a){
+    vector<int> temp;
+    temp = translate(p.multiset,a);
+    return 1.0f/p.checkHowCorrect(temp);
+}
+
 vector<int> randomNeighbour(const vector<int>& binary){
     vector<vector<int>> neighbours = findNeighbour(binary);
     std::uniform_int_distribution<int> rndNgb(0, neighbours.size()-1);
@@ -267,4 +324,29 @@ vector<int> randomNeighbour(const vector<int>& binary){
 
 void printZb(int iteration,Problem problem, vector<int> bestSolutionSoFar, vector<int> tempSolution){
     cout << iteration << "\t" << problem.checkHowCorrect(bestSolutionSoFar) << "\t" << problem.checkHowCorrect(tempSolution) << endl;
+}
+
+chromosome_t mutation(chromosome_t const preMutation, float p_mutation){
+    chromosome_t mutated = preMutation;
+    uniform_real_distribution<float> mutation_r(0.0,p_mutation);
+    for(int &a : mutated){
+        if(p_mutation>mutation_r(mt1)){
+            a=1-a;
+        }
+    }
+    return mutated;
+}
+
+vector<vector<int>> crossover1p(const chromosome_t& p1, const chromosome_t& p2, float p_crossover){
+    uniform_real_distribution<float> crossover_r(0.0,p_crossover);
+    if(p_crossover<crossover_r(mt1)){
+        return {p1,p2};
+    }
+
+    chromosome_t p1c=p1;
+    chromosome_t p2c=p2;
+    for(int i=p1c.size()/2;i<p1c.size();i++){
+        swap(p1c.at(i),p2c.at(i));
+    }
+    return {p1c,p2c};
 }

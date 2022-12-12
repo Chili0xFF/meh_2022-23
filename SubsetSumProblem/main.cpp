@@ -23,6 +23,9 @@ bool showQuality;
 bool showIterations;
 bool showAmountCheck;
 int annealTemp;
+float p_cross;
+float p_mutation;
+int pSize;
 
 string tempMethod;
 std::function<double(int)> T = [](int k){return 1000.0/(k+1);};
@@ -39,7 +42,8 @@ map<string, function<vector<int>(Problem,int,bool,bool,bool)>> methods = {
         {"hill_climb_det", SolveClimbing},
         {"hill_climb_rand", SolveRandomClimbing},
         {"tabu_search", SolveTabu},
-        {"annealing",[](Problem p,int i,bool a, bool b, bool c){return SolveAnnealing(p,i,a,b,c,annealTemp,tempMap.at(tempMethod));}}
+        {"annealing",[](Problem p,int i,bool a, bool b, bool c){return SolveAnnealing(p,i,a,b,c,annealTemp,tempMap.at(tempMethod));}},
+        {"genetic",[](Problem p,int i, bool a, bool b, bool c){return SolveGenetic(p,i,a,b,c,p_cross,p_mutation,pSize);}}
 };
 
 int main(int argc, char **argv) {
