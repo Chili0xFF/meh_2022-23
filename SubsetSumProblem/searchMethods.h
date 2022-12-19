@@ -21,13 +21,12 @@ vector<int> SolveTabu(Problem problem, int iterations, bool showHwoManyIteration
 vector<int> SolveAnnealing(Problem problem, int i, bool a, bool b, bool c, int temperature, std::function<double(int)> T = [](int k){return 1000.0/(k+1);});
 vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterations, bool showHowManyChecked, bool showProgress, float p_crossover, float p_mutation, int populationSize);
 chromosome_t mutation(chromosome_t preMutation, float p_mutation);
-vector<vector<int>> crossover1p(chromosome_t p1, chromosome_t p2);
 vector<vector<int>> findNeighbour(const vector<int>& vector1);
 vector<int> translate(vector<int> vector1, vector<int> vector2);
 vector<int> randomNeighbour(const vector<int>& binary);
 chromosome_t generateRandomSolution(int size);
 population_t populate(int populationSize,int chromosomeSize);
-
+vector<vector<int>> crossover1p(const chromosome_t& p1, const chromosome_t& p2, float p_crossover);
 float fitness(Problem p, chromosome_t a);
 void printZb(int iteration, Problem problem, vector<int> vector1, vector<int> vector2);
 #endif //SUBSETSUMPROBLEM_SEARCHMETHODS_H

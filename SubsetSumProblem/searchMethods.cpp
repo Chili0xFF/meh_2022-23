@@ -239,6 +239,9 @@ vector<int> SolveAnnealing(Problem problem, int iterations, bool showHwoManyIter
     if(showHowManyChecked)cout<<"Times Checked: "<<problem.HowManyTimesChecked<<endl;
     return bestSolution;
 }
+
+int selectionTournament(vector<double> fitnesses);
+
 vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterations, bool showHowManyChecked, bool showProgress, float p_crossover, float p_mutation, int populationSize){
     using namespace std;
     uniform_real_distribution<double> uniform(0.0, 1.0);
@@ -251,13 +254,11 @@ vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterat
         // calculate fitness
         transform(population_fit.begin(), population_fit.end(),
                   parents_indexes.begin(),
-                  [&](auto e) { return selection(population_fit); });
+                  [&](auto e) { return selectionTournament(population_fit); });
         // perform crossover operations
         for (int i = 0; i < parents_indexes.size() - 1; i += 2) {
             vector<chromosome_t> offspring = {population[parents_indexes[i]], population[parents_indexes[i + 1]]};
-            if (uniform(mt1) < p_crossover) {
-                offspring = crossover1p(offspring[0],offspring[1]);
-            }
+            offspring = crossover1p(offspring[0],offspring[1], p_crossover);
             new_population[i] = offspring[0];
             new_population[i + 1] = offspring[1];
         }
@@ -269,6 +270,12 @@ vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterat
                        [&problem](chromosome_t chrom){return fitness(problem,chrom);});
     }
     return population.at(0);
+}
+
+int selectionTournament(vector<double> fitnesses) {
+    uniform_int_distribution<int> indexRand(0,fitnesses.size());
+    int index1=indexRand(mt1),index2=indexRand(mt1);
+    return ((index1 > index2) ? index1 : index2);
 }
 
 
