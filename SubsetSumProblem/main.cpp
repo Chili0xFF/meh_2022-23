@@ -26,6 +26,7 @@ int annealTemp;
 float p_cross;
 float p_mutation;
 int pSize;
+int useElites;
 
 string tempMethod;
 std::function<double(int)> T = [](int k){return 1000.0/(k+1);};
@@ -43,7 +44,7 @@ map<string, function<vector<int>(Problem,int,bool,bool,bool)>> methods = {
         {"hill_climb_rand", SolveRandomClimbing},
         {"tabu_search", SolveTabu},
         {"annealing",[](Problem p,int i,bool a, bool b, bool c){return SolveAnnealing(p,i,a,b,c,annealTemp,tempMap.at(tempMethod));}},
-        {"genetic",[](Problem p,int i, bool a, bool b, bool c){return SolveGenetic(p,i,a,b,c,p_cross,p_mutation,pSize);}}
+        {"genetic",[](Problem p,int i, bool a, bool b, bool c){return SolveGenetic(p,i,a,b,c,p_cross,p_mutation,pSize,useElites);}}
 };
 
 int main(int argc, char **argv) {
@@ -65,6 +66,7 @@ int main(int argc, char **argv) {
     p_cross=arg(argc,argv, "pCrossover",0.5f,"Probability of crossover. Genetic only");
     p_mutation=arg(argc,argv, "pMutation",0.5f,"Probability of mutation. Genetic only");
     pSize=arg(argc,argv, "pSize",100,"Sets population size. Genetic only");
+    useElites= arg(argc, argv, "elites", 0, "Determines amount of elites during genetic algorithm");
     if (help) {
         std::cout << "help screen.." << std::endl;
         args_info(std::cout);

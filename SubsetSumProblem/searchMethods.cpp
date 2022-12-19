@@ -10,6 +10,8 @@ mt19937 mt1(time(nullptr));
 
 int iterationsChecked=0;
 
+
+
 using chromosome_t = vector<int>;
 
 vector<int> SolveTabu(Problem problem, int iterations, bool showHwoManyIterations, bool showHowManyChecked, bool showProgress) {
@@ -240,22 +242,28 @@ vector<int> SolveAnnealing(Problem problem, int iterations, bool showHwoManyIter
     return bestSolution;
 }
 
-vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterations, bool showHowManyChecked, bool showProgress, float p_crossover, float p_mutation, int populationSize){
+vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterations, bool showHowManyChecked, bool showProgress, float p_crossover, float p_mutation, int populationSize, int amountOfElites){
     using namespace std;
     uniform_real_distribution<float> r_crossover(0.0, 1.0);
     std::sort(problem.multiset.begin(), problem.multiset.end());
     population_t population = populate(populationSize,problem.multiset.size());
     vector<double> population_fit(population.size());
+    vector<chromosome_t> elites={};
     transform(population.begin(), population.end(), population_fit.begin(),[&problem](chromosome_t chrom){return fitness(problem,chrom);});
     for(int i=0;i<iterations;i++){
+        elites.clear();
         vector<int> parents_indexes(population.size());
         population_t new_population(population.size());
+        if(amountOfElites!=0)elites=getElites(problem,population,amountOfElites);
+        for(int j=0;j<elites.size();j++){
+            new_population.at(j)=elites.at(j);
+        }
         // calculate selection
         transform(population_fit.begin(), population_fit.end(),
                   parents_indexes.begin(),
                   [&](auto e) { return selectionTournament(population_fit); });
         // perform crossover operations
-        for (int j = 0; j < parents_indexes.size() - 1; j += 2) {
+        for (int j = amountOfElites; j < parents_indexes.size() - 1; j += 2) {
             vector<chromosome_t> offspring = {population[parents_indexes[j]], population[parents_indexes[j + 1]]};
 
             if (r_crossover(mt1) < p_crossover) {
@@ -264,9 +272,14 @@ vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterat
             new_population[j] = offspring[0];
             new_population[j + 1] = offspring[1];
         }
+
+        for (int j = amountOfElites; j < new_population.size(); ++j) {
+            new_population.at(j)= mutation(new_population.at(j),p_mutation);
+        }
+        /*
         for (auto &chromosome : new_population) {
             chromosome = mutation(chromosome, p_mutation);
-        }
+        }*/
         population = new_population;
         std::transform(population.begin(), population.end(), population_fit.begin(),
                        [&problem](chromosome_t chrom){return fitness(problem,chrom);});
@@ -290,6 +303,22 @@ vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterat
         }
     }
     return translate(problem.multiset,population.at(bestIndex));
+}
+
+vector<chromosome_t> getElites(Problem problem, population_t population, int amountOfElites) {
+    vector<chromosome_t> elites;
+    population_t tempPopulation=population;
+    for(int i=0;i<amountOfElites;i++){
+        int bestIndex=0;
+        for(int j=0;j<tempPopulation.size();j++){
+            if(fitness(problem,tempPopulation.at(j)) > fitness(problem,tempPopulation.at(bestIndex))) {
+                bestIndex = j;
+            }
+        }
+        elites.push_back(tempPopulation.at(bestIndex));
+        tempPopulation.erase(tempPopulation.begin()+bestIndex);
+    }
+    return elites;
 }
 
 int selectionTournament(vector<double> fitnesses) {
