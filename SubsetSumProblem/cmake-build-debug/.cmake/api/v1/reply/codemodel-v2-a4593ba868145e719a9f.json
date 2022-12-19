@@ -49,12 +49,12 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem/cmake-build-debug",
-		"source" : "C:/Users/s23049/Documents/GitHub/meh_2022-23/SubsetSumProblem"
+		"build" : "E:/GithubRepos/meh_2022-23/SubsetSumProblem/cmake-build-debug",
+		"source" : "E:/GithubRepos/meh_2022-23/SubsetSumProblem"
 	},
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 4
+		"minor" : 3
 	}
 }

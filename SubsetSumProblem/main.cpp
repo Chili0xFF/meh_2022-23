@@ -23,9 +23,9 @@ bool showQuality;
 bool showIterations;
 bool showAmountCheck;
 int annealTemp;
-float p_cross=0;
-float p_mutation=0;
-int pSize=100;
+float p_cross;
+float p_mutation;
+int pSize;
 
 string tempMethod;
 std::function<double(int)> T = [](int k){return 1000.0/(k+1);};
@@ -50,18 +50,21 @@ int main(int argc, char **argv) {
     using namespace tp::args;
     // Arguments handling
     auto help = arg(argc, argv, "help", false);
-    link = arg(argc,argv,"link", std::string("data.txt"), "Path to the input file");
+    link = arg(argc,argv,"link", std::string("..\\data.txt"), "Path to the input file");
     target = arg(argc,argv, "target", 100, "Target value of our subset");
     method = arg(argc, argv, "method", std::string("genetic"),"Opt. method. Available are: brute_force tabu_search ""random_probe hill_climb_det.");
-    iterations = arg(argc, argv, "iterations", 100, "Maximal number of iterations.");
+    iterations = arg(argc, argv, "iterations", 1000, "Maximal number of iterations.");
     showTime = arg(argc, argv, "time", false, "Show time.");
     showGraph = arg(argc, argv, "graph", false, "Show graph.");
-    showSolution = arg(argc, argv, "solution", true, "Show solution.");
+    showSolution = arg(argc, argv, "solution", false, "Show solution.");
     showQuality = arg(argc, argv, "quality", false, "Show quality of solution.");
     showIterations = arg(argc, argv, "usedIterations", false, "Show how many iterations passed.");
     showAmountCheck = arg(argc, argv, "checks", false, "Show how many how many times target function was used");
     annealTemp = arg(argc,argv, "temperature",10,"Sets temperature. Only used for -method anneal");
     tempMethod = arg(argc,argv, "tempMethod",std::string("divByK"),"Chooses temperature methods. Only used for -method anneal [divByK | divByLogK | 05PowK]");
+    p_cross=arg(argc,argv, "pCrossover",0.5f,"Probability of crossover. Genetic only");
+    p_mutation=arg(argc,argv, "pMutation",0.5f,"Probability of mutation. Genetic only");
+    pSize=arg(argc,argv, "pSize",100,"Sets population size. Genetic only");
     if (help) {
         std::cout << "help screen.." << std::endl;
         args_info(std::cout);
@@ -87,7 +90,7 @@ int main(int argc, char **argv) {
     vector<int> result = methods.at(method)(problem, iterations, showIterations, showAmountCheck, showGraph);
     auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = end-start;
-    cout<<"test2"<<endl;
+
     if(showTime)std::cout << "Elapsed time: " << elapsed_seconds.count() << "s\n";
     if(showSolution){
         cout<<"Solution: ";
