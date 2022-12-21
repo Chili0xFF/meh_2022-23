@@ -324,7 +324,7 @@ vector<chromosome_t> getElites(Problem problem, population_t population, int amo
 int selectionTournament(vector<double> fitnesses) {
     uniform_int_distribution<int> indexRand(0,fitnesses.size()-1);
     int index1=indexRand(mt1),index2=indexRand(mt1);
-    return ((index1 > index2) ? index1 : index2);
+    return ((fitnesses.at(index1) > fitnesses.at(index2)) ? index1 : index2);
 }
 
 
