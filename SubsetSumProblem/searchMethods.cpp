@@ -121,7 +121,9 @@ vector<int> SolveBruteForce(Problem problem, int iterations, bool showHwoManyIte
                 bestCost=cost;
             }
             if(cost==0){
-                break;
+                if(showHwoManyIterations)cout<<"Iterations: "<<iterationsChecked<<endl;
+                if(showHowManyChecked)cout<<"Times Checked: "<<problem.HowManyTimesChecked<<endl;
+                return bestSolution;
             }
             iterationsChecked++;
             if(showProgress)printZb(iterationsChecked,problem,bestSolution,tempResult);
@@ -276,10 +278,6 @@ vector<int> SolveGenetic(Problem problem, int iterations, bool showHwoManyIterat
         for (int j = amountOfElites; j < new_population.size(); ++j) {
             new_population.at(j)= mutation(new_population.at(j),p_mutation);
         }
-        /*
-        for (auto &chromosome : new_population) {
-            chromosome = mutation(chromosome, p_mutation);
-        }*/
         population = new_population;
         std::transform(population.begin(), population.end(), population_fit.begin(),
                        [&problem](chromosome_t chrom){return fitness(problem,chrom);});

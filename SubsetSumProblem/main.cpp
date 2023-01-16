@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
     showIterations = arg(argc, argv, "usedIterations", false, "Show how many iterations passed.");
     showAmountCheck = arg(argc, argv, "checks", false, "Show how many how many times target function was used");
     annealTemp = arg(argc,argv, "temperature",10,"Sets temperature. Only used for -method anneal");
-    tempMethod = arg(argc,argv, "tempMethod",std::string("divByK"),"Chooses temperature methods. Only used for -method anneal [divByK | divByLogK | 05PowK]");
+    tempMethod = arg(argc,argv, "tempMethod",std::string("divByLogK"),"Chooses temperature methods. Only used for -method anneal [divByK | divByLogK | 05PowK]");
     p_cross=arg(argc,argv, "pCrossover",0.5f,"Probability of crossover. Genetic only");
     p_mutation=arg(argc,argv, "pMutation",0.5f,"Probability of mutation. Genetic only");
     pSize=arg(argc,argv, "pSize",100,"Sets population size. Genetic only");
